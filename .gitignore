@@ -1,5 +1,6 @@
 # Config files
 config.ini
+reddit.py
 
 # cache files
 __pycache__/*
