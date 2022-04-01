@@ -1,5 +1,6 @@
 from configparser import SafeConfigParser
 import configparser
+import threading
 from tkinter import *
 from tkinter import font
 from tkinter import ttk
@@ -7,9 +8,9 @@ from tkinter import filedialog
 from tkinter import messagebox
 from tkcalendar import DateEntry
 
-from apiSupport import take_secret_credentials, update_table, update_table_custom
+from apiSupport import take_secret_credentials, update_table_custom, update_table_real_time
 COORDINATES = {'AF': '33,65,5000km', 'AL': '41,20,5000km', 'DZ': '28,3,5000km', 'AS': '-14.3333,-170,5000km', 'AD': '42.5,1.6,5000km', 'AO': '-12.5,18.5,5000km', 'AI': '18.25,-63.1667,5000km', 'AQ': '-90,0,5000km', 'AG': '17.05,-61.8,5000km', 'AR': '-34,-64,5000km', 'AM': '40,45,5000km', 'AW': '12.5,-69.9667,5000km', 'AU': '-27,133,5000km', 'AT': '47.3333,13.3333,5000km', 'AZ': '40.5,47.5,5000km', 'BS': '24.25,-76,5000km', 'BH': '26,50.55,5000km', 'BD': '24,90,5000km', 'BB': '13.1667,-59.5333,5000km', 'BY': '53,28,5000km', 'BE': '50.8333,4,5000km', 'BZ': '17.25,-88.75,5000km', 'BJ': '9.5,2.25,5000km', 'BM': '32.3333,-64.75,5000km', 'BT': '27.5,90.5,5000km', 'BO': '-17,-65,5000km', 'BA': '44,18,5000km', 'BW': '-22,24,5000km', 'BV': '-54.4333,3.4,5000km', 'BR': '-10,-55,5000km', 'IO': '-6,71.5,5000km', 'BN': '4.5,114.6667,5000km', 'BG': '43,25,5000km', 'BF': '13,-2,5000km', 'BI': '-3.5,30,5000km', 'KH': '13,105,5000km', 'CM': '6,12,5000km', 'CA': '60,-95,5000km', 'CV': '16,-24,5000km', 'KY': '19.5,-80.5,5000km', 'CF': '7,21,5000km', 'TD': '15,19,5000km', 'CL': '-30,-71,5000km', 'CN': '35,105,5000km', 'CX': '-10.5,105.6667,5000km', 'CC': '-12.5,96.8333,5000km', 'CO': '4,-72,5000km', 'KM': '-12.1667,44.25,5000km', 'CG': '-1,15,5000km', 'CD': '0,25,5000km', 'CK': '-21.2333,-159.7667,5000km', 'CR': '10,-84,5000km', 'CI': '8,-5,5000km', 'HR': '45.1667,15.5,5000km', 'CU': '21.5,-80,5000km', 'CY': '35,33,5000km', 'CZ': '49.75,15.5,5000km', 'DK': '56,10,5000km', 'DJ': '11.5,43,5000km', 'DM': '15.4167,-61.3333,5000km', 'DO': '19,-70.6667,5000km', 'EC': '-2,-77.5,5000km', 'EG': '27,30,5000km', 'SV': '13.8333,-88.9167,5000km', 'GQ': '2,10,5000km', 'ER': '15,39,5000km', 'EE': '59,26,5000km', 'ET': '8,38,5000km', 'FK': '-51.75,-59,5000km', 'FO': '62,-7,5000km', 'FJ': '-18,175,5000km', 'FI': '64,26,5000km', 'FR': '46,2,5000km', 'GF': '4,-53,5000km', 'PF': '-15,-140,5000km', 'TF': '-43,67,5000km', 'GA': '-1,11.75,5000km', 'GM': '13.4667,-16.5667,5000km', 'GE': '42,43.5,5000km', 'DE': '51,9,5000km', 'GH': '8,-2,5000km', 'GI': '36.1833,-5.3667,5000km', 'GR': '39,22,5000km', 'GL': '72,-40,5000km', 'GD': '12: -21.1,55.6,5000km', 'RO': '46,25,5000km', 'RU': '60,100,5000km', 'RW': '-2,30,5000km', 'SH': '-15.9333,-5.7,5000km', 'KN': '17.3333,-62.75,5000km', 'LC': '13.8833,-61.1333,5000km', 'PM': '46.8333,-56.3333,5000km', 'VC': '13.25,-61.2,5000km', 'WS': '-13.5833,-172.3333,5000km', 'SM': '43.7667,12.4167,5000km', 'ST': '1,7,5000km', 'SA': '25,45,5000km', 'SN': '14,-14,5000km', 'RS': '44,21,5000km', 'SC': '-4.5833,55.6667,5000km', 'SL': '8.5,-11.5,5000km', 'SG': '1.3667,103.8,5000km', 'SK': '48.6667,19.5,5000km', 'SI': '46,15,5000km', 'SB': '-8,159,5000km', 'SO': '10,49,5000km', 'ZA': '-29,24,5000km', 'GS': '-54.5,-37,5000km', 'SS': '8,30,5000km', 'ES': '40,-4,5000km', 'LK': '7,81,5000km', 'SD': '15,30,5000km', 'SR': '4,-56,5000km', 'SJ': '78,20,5000km', 'SZ': '-26.5,31.5,5000km', 'SE': '62,15,5000km', 'CH': '47,8,5000km', 'SY': '35,38,5000km', 'TW': '23.5,121,5000km', 'TJ': '39,71,5000km', 'TZ': '-6,35,5000km', 'TH': '15,100,5000km', 'TL': '-8.55,125.5167,5000km', 'TG': '8,1.1667,5000km', 'TK': '-9,-172,5000km', 'TO': '-20,-175,5000km', 'TT': '11,-61,5000km', 'TN': '34,9,5000km', 'TR': '39,35,5000km', 'TM': '40,60,5000km', 'TC': '21.75,-71.5833,5000km', 'TV': '-8,178,5000km', 'UG': '1,32,5000km', 'UA': '49,32,5000km', 'AE': '24,54,5000km', 'GB': '54,-2,5000km', 'US': '38,-97,5000km', 'UM': '19.2833,166.6,5000km', 'UY': '-33,-56,5000km', 'UZ': '41,64,5000km', 'VU': '-16,167,5000km', 'VE': '8,-66,5000km', 'VN': '16,106,5000km', 'VG': '18.5,-64.5,5000km', 'VI': '18.3333,-64.8333,5000km', 'WF': '-13.3,-176.2,5000km', 'EH': '24.5,-13,5000km', 'YE': '15,48,5000km', 'ZM': '-15,30,5000km', 'ZW': '-20,30,5000km'}
-
+HIDE_STRING = '*************************************'
 class App(Frame):
         
     def aboutTabSettings(self, parent):
@@ -21,7 +22,7 @@ class App(Frame):
         return self.about
 
     def apiTabSettings(self, parent):
-        def modifyConfig():
+        def modify_config():
             config = configparser.ConfigParser()
             config.read('config.ini')
             config.set('TWITTER','CONSUMER_KEY', ck_entry.get())
@@ -32,36 +33,36 @@ class App(Frame):
                 config.write(configfile)
                 configfile.close()
 
-        def toggleShowHideEntry(bool):
+        def toggle_show_hide_entry(bool):
             if(bool):
                 previous = ck_entry.get()
                 ck_entry.delete(0, 'end')
                 cs_entry.delete(0, 'end')
                 as_entry.delete(0, 'end')
                 at_entry.delete(0, 'end')
-                if previous == '*************************************':
+                if previous == HIDE_STRING:
                     ck_entry.insert(0, tw_cr['ck'])
                     cs_entry.insert(0, tw_cr['csk'])
                     as_entry.insert(0, tw_cr['ats'])
                     at_entry.insert(0, tw_cr['at'])
                     showHideButtonTW.config(image=hide_button_image)
                 else:
-                    ck_entry.insert(0, '*************************************')
-                    cs_entry.insert(0, '*************************************')
-                    as_entry.insert(0, '*************************************')
-                    at_entry.insert(0, '*************************************')
+                    ck_entry.insert(0, HIDE_STRING)
+                    cs_entry.insert(0, HIDE_STRING)
+                    as_entry.insert(0, HIDE_STRING)
+                    at_entry.insert(0, HIDE_STRING)
                     showHideButtonTW.config(image=show_button_image)
             else:
                 previous = ci_entry.get()
                 ci_entry.delete(0, 'end')
                 s_entry.delete(0, 'end')
-                if previous == '*************************************':
+                if previous == HIDE_STRING:
                     ci_entry.insert(0, tw_cr['ci'])
                     s_entry.insert(0, tw_cr['cs'])
                     showHideButtonRD.config(image=hide_button_image)
                 else:
-                    ci_entry.insert(0, '*************************************')
-                    s_entry.insert(0, '*************************************')
+                    ci_entry.insert(0, HIDE_STRING)
+                    s_entry.insert(0, HIDE_STRING)
                     showHideButtonRD.config(image=show_button_image)
 
         global save_button_image
@@ -75,7 +76,7 @@ class App(Frame):
         Label(info, text="The default keys are from a standard application, if you want to\nchange it for your own, modify the following fields.", justify=LEFT, bg="white", font=('SegoeUI 9')).place(x='5', y='0')
         #General Buttons
         save_button_image = PhotoImage(file=r'icons/save_button.png')
-        saveButton = Button(self.api, image=save_button_image, command = modifyConfig, border=0, bg='white', activebackground='white')
+        saveButton = Button(self.api, image=save_button_image, command = modify_config, border=0, bg='white', activebackground='white')
         saveButton.place(x='280', y='560')
         ''' -------- TWITTER -------- '''
         #LabelFrames
@@ -89,22 +90,23 @@ class App(Frame):
         tw_cr = take_secret_credentials() # Take creds from tw
         ck_entry = ttk.Entry(self.api, font = ('SegoeUI', 9))
         ck_entry.place(x='120', y='112', width=220, height=20)
-        ck_entry.insert(0, '*************************************')
+        ck_entry.insert(0, HIDE_STRING)
         cs_entry = ttk.Entry(self.api, font = ('SegoeUI', 9))
         cs_entry.place(x='120', y='162', width=220, height=20)
-        cs_entry.insert(0, '*************************************')
+        cs_entry.insert(0, HIDE_STRING)
         at_entry = ttk.Entry(self.api, font = ('SegoeUI', 9))
         at_entry.place(x='120', y='212', width=220, height=20)
-        at_entry.insert(0, '*************************************')
+        at_entry.insert(0, HIDE_STRING)
         as_entry = ttk.Entry(self.api, font = ('SegoeUI', 9))
         as_entry.place(x='120', y='262', width=220, height=20)
-        as_entry.insert(0, '*************************************')
+        as_entry.insert(0, HIDE_STRING)
         #Buttons
         reset_button_image = PhotoImage(file=r'icons/reset_button.png')
+        # COMMAND TODO
         Button(self.api, image=reset_button_image, command = None, border=0, bg='white', activebackground='white').place(x='280', y='300')
         show_button_image = PhotoImage(file=r'icons/show_button.png')
         hide_button_image = PhotoImage(file=r'icons/hide_button.png')
-        showHideButtonTW = Button(self.api, image=show_button_image, command = lambda: toggleShowHideEntry(True), border=0, bg='white', activebackground='white')
+        showHideButtonTW = Button(self.api, image=show_button_image, command = lambda: toggle_show_hide_entry(True), border=0, bg='white', activebackground='white')
         showHideButtonTW.place(x='340', y='90')
         ''' -------- REDDIT -------- '''
         #LabelFrames
@@ -115,12 +117,12 @@ class App(Frame):
         #Entry
         ci_entry = ttk.Entry(self.api, font = ('SegoeUI', 9))
         ci_entry.place(x='120', y='387', width=220, height=20)
-        ci_entry.insert(0, '*************************************')
+        ci_entry.insert(0, HIDE_STRING)
         s_entry = ttk.Entry(self.api, font = ('SegoeUI', 9))
         s_entry.place(x='120', y='437', width=220, height=20)
-        s_entry.insert(0, '*************************************')
+        s_entry.insert(0, HIDE_STRING)
         #Buttons
-        showHideButtonRD = Button(self.api, image=show_button_image, command = lambda: toggleShowHideEntry(False), border=0, bg='white', activebackground='white')
+        showHideButtonRD = Button(self.api, image=show_button_image, command = lambda: toggle_show_hide_entry(False), border=0, bg='white', activebackground='white')
         showHideButtonRD.place(x='340', y='365')
         Button(self.api, image=reset_button_image, command = None, border=0, bg='white', activebackground='white').place(x='280', y='510')
         
@@ -150,7 +152,7 @@ class App(Frame):
             notebook.add(f3, text="About ...", padding=20)
             notebook.pack()     
 
-        def showHideFrame(toggle):
+        def show_hide_frame(toggle):
             if toggle[0].place_info():
                 for element in toggle:
                     element.place_forget()
@@ -220,7 +222,7 @@ class App(Frame):
         #TODO
         advanced_button_image = PhotoImage(file=r'icons/advanced_button.png')
         
-        Button(self.home, image=advanced_button_image, command = lambda: showHideFrame(self.home.toggle), border=0, bg='#E4E4E4', activebackground='#E4E4E4').place(x='865', y='68')
+        Button(self.home, image=advanced_button_image, command = lambda: show_hide_frame(self.home.toggle), border=0, bg='#E4E4E4', activebackground='#E4E4E4').place(x='865', y='68')
         compute_button_image = PhotoImage(file=r'icons/compute_button.png')
         Button(self.home, image=compute_button_image, command = None, border=0, bg='#E4E4E4', activebackground='#E4E4E4').place(x='690', y='98')
         
@@ -267,7 +269,13 @@ class App(Frame):
         return self.home
         
     def realTime(self):
-        def showHideFrame(toggle):
+
+
+        def start_real_time_analysis():
+            mapped_vars = {'RB':[sentimentVarSF.get(), aggressiveVarSF.get(), englishVarSF.get(), spanishVarSF.get(), twitterVarSF.get(), redditVarSF.get()],'EN': [entry_subreddit.get(), country_phrase.get(), entry_query.get()]}
+            update_table_real_time(analysis, mapped_vars)
+
+        def show_hide_frame(toggle):
             if toggle[0].place_info():
                 for element in toggle:
                     element.place_forget()
@@ -320,8 +328,9 @@ class App(Frame):
 
         # Buttons
         start_rt_button_image = PhotoImage(file=r'icons/start_button.png')
-        Button(self.realTime, image=start_rt_button_image, command = lambda: update_table(analysis), border=0, bg='white', activebackground='white').place(x='1060', y='5')
-        Button(self.realTime, image=advanced_button_image, command = lambda: showHideFrame(white_frame.toggle), border=0, bg='white', activebackground='white').place(x='1140', y='5')
+        
+        Button(self.realTime, image=start_rt_button_image, command = lambda: threading.Thread(target=start_real_time_analysis).start(), border=0, bg='white', activebackground='white').place(x='1060', y='5')
+        Button(self.realTime, image=advanced_button_image, command = lambda: show_hide_frame(white_frame.toggle), border=0, bg='white', activebackground='white').place(x='1140', y='5')
         
         ''' -------- FRAMES SETTINGS -------- '''
         # Home frames
@@ -331,16 +340,6 @@ class App(Frame):
         Label(self.realTime, text='Social media mode:', bg='#F9F9F9', fg='black', font=('SegoeUI 9'), justify=LEFT)
         Label(self.realTime, text='Analysis type:', bg='#F9F9F9', fg='black', font=('SegoeUI 9'), justify=LEFT)
 
-        # Frame radio-check buttons
-        socialM_SF = IntVar()
-        Radiobutton(self.realTime,text='Twitter', padx = 20,variable=socialM_SF,value=1, bg='#F9F9F9', activebackground='#F9F9F9')
-        Radiobutton(self.realTime,text='Reddit', padx = 20,variable=socialM_SF,value=0, bg='#F9F9F9', activebackground='#F9F9F9')
-
-        # Frame check buttons
-        sentimentVarSF = IntVar()
-        aggressiveVarSF = IntVar()
-        Checkbutton(self.realTime, text = 'Sentiment', variable = sentimentVarSF, bg='#F9F9F9', activebackground='#F9F9F9', onvalue = 1, offvalue = 0)
-        Checkbutton(self.realTime, text = 'Aggressive', variable = aggressiveVarSF, bg='#F9F9F9', activebackground='#F9F9F9', onvalue = 1, offvalue = 0)
         """ ADVANCED """
         # Home frames
         white_frame = Frame(self.realTime, bg='white', height=285, width=220, highlightbackground="black", highlightthickness=1)
@@ -349,10 +348,11 @@ class App(Frame):
         subreddit_label = Label(white_frame, text='SubReddit**:', bg='#F9F9F9', fg='black', font=('SegoeUI 9'), justify=LEFT, background='white')
         country_label = Label(white_frame, text='Country*:', bg='#F9F9F9', fg='black', font=('SegoeUI 9'), justify=LEFT, background='white')
         query_label = Label(white_frame, text='Query:', bg='#F9F9F9', fg='black', font=('SegoeUI 9'), justify=LEFT, background='white')
-
+       
         #Entry
         entry_subreddit = ttk.Entry(white_frame, font = ('SegoeUI', 9))
-        entry_country = ttk.Entry(white_frame, font = ('SegoeUI', 9))
+        country_phrase = ttk.Combobox(white_frame,font = ('SegoeUI', 9), state="readonly", values=list(COORDINATES.keys()))
+        
         entry_query = ttk.Entry(white_frame, font = ('SegoeUI', 9))
         
         # Frame check buttons
@@ -368,21 +368,21 @@ class App(Frame):
         spCB = Checkbutton(white_frame, text = 'Spanish', variable = spanishVarSF, bg='white', activebackground='white', onvalue = 1, offvalue = 0)
         twCB = Checkbutton(white_frame, text = 'Twitter', variable = twitterVarSF, bg='white', activebackground='white', onvalue = 1, offvalue = 0)
         rdCB = Checkbutton(white_frame, text = 'Reddit', variable = redditVarSF, bg='white', activebackground='white', onvalue = 1, offvalue = 0)
-        white_frame.toggle = [subreddit_label, country_label, query_label, entry_subreddit, entry_country, entry_query, sfCB, afCB, efCB, spCB, twCB, rdCB, white_frame]  
+        white_frame.toggle = [subreddit_label, country_label, query_label, entry_subreddit, country_phrase, entry_query, sfCB, afCB, efCB, spCB, twCB, rdCB, white_frame]  
         return self.realTime
 
     # Window for customized analysis
     def customAnalysis(self):
 
-        def startCustomAnalysis():
-            map = {'RB':[sentimentVarSF.get(), aggressiveVarSF.get(), englishVarSF.get(), spanishVarSF.get(), twitterVarSF.get(), redditVarSF.get()],'EN': [entry_subreddit.get(), country_phrase.get(), query_phrase.get(), numItems.get()]}
-            numIt = str(map['EN'][3])
-            if numIt.isdigit():
-                update_table_custom(analysis, map)
+        def start_custom_analysis():
+            mapped_vars = {'RB':[sentimentVarSF.get(), aggressiveVarSF.get(), englishVarSF.get(), spanishVarSF.get(), twitterVarSF.get(), redditVarSF.get()],'EN': [entry_subreddit.get(), country_phrase.get(), query_phrase.get(), numItems.get()]}
+            num_items = str(mapped_vars['EN'][3])
+            if num_items.isdigit():
+                update_table_custom(analysis, mapped_vars)
             else:
                 messagebox.showwarning("Input error", "Num items must be a number!")
 
-        def showHideFrame(toggle):
+        def show_hide_frame(toggle):
             if toggle[0].place_info():
                 for element in toggle:
                     element.place_forget()
@@ -442,7 +442,7 @@ class App(Frame):
         query_phrase.insert(0, '')
         country_phrase = ttk.Combobox(self.customAnalysis,font = ('SegoeUI', 9), state="readonly", values=list(COORDINATES.keys()))
         country_phrase.place(x='940', y='10', width=100, height=20)
-        country_phrase.insert(0, 'ES')
+        
         #Label(self.customAnalysis, text="Start Date", bg="white").place(x='25', y='8')
         #Label(self.customAnalysis, text="End Date", bg="white").place(x='225', y='8')
         Label(self.customAnalysis, text="Samples (N)", bg="white").place(x='520', y='8')
@@ -451,8 +451,9 @@ class App(Frame):
         
         # Buttons
         start_ca_button_image = PhotoImage(file=r'icons/start_button.png')
-        Button(self.customAnalysis, image=start_ca_button_image, command = startCustomAnalysis, border=0, bg='white', activebackground='white').place(x='1060', y='5')
-        Button(self.customAnalysis, image=advanced_button_image, command = lambda: showHideFrame(white_frame.toggle), border=0, bg='white', activebackground='white').place(x='1145', y='5')
+        
+        Button(self.customAnalysis, image=start_ca_button_image, command = lambda: threading.Thread(target=start_custom_analysis).start(), border=0, bg='white', activebackground='white').place(x='1060', y='5')
+        Button(self.customAnalysis, image=advanced_button_image, command = lambda: show_hide_frame(white_frame.toggle), border=0, bg='white', activebackground='white').place(x='1145', y='5')
 
         """ ADVANCED """
         # Home frames
@@ -482,7 +483,7 @@ class App(Frame):
         return self.customAnalysis
     
     def __init__(self, main):
-        def defineStyles():
+        def define_styles():
             style = ttk.Style()
             style.theme_create( "custom", parent="vista", settings={
             "TNotebook": {"configure": {"tabmargins": [0, 0, 0, 0] } },
@@ -494,7 +495,7 @@ class App(Frame):
             style.configure('Treeview', rowheight=30, highlightthickness=0, bd=0, font=('Calibri', 11), bg="white")
             style.configure('TEntry', bordercolor='black')
         super().__init__(main)
-        defineStyles()
+        define_styles()
         main.title('SM - Meter')
         ''' -------- GENERAL SETTINGS -------- '''
         # Window size
