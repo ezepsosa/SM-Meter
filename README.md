@@ -43,18 +43,20 @@ Once you have completed the above steps, you will be ready to compile and run th
 ### Home Window
 
 The home window serves as a starting point to initiate various types of analysis. It includes an input field where you can specify the column to analyze in a CSV file. To begin using the application, simply execute the `main.py` file.
-  <img src="https://github.com/ezepsosa/SM-Meter/blob/main/assets/main_screen.jpg" alt="Home window" width="600"/>
+![Home window](https://github.com/ezepsosa/SM-Meter/blob/main/assets/main_screen.jpg)
 ### Real-Time Analysis
 
 In the real-time analysis window, you'll find three graphs displaying different metrics. These graphs are updated every 60 seconds, providing real-time insights based on the ongoing analysis. To start analyzing real-time data, execute the `main.py` file.
 
-<img src="https://github.com/ezepsosa/SM-Meter/blob/main/assets/main_view_executed.jpg" alt="Real time analysis" width="600"/>
+![Real time](https://github.com/ezepsosa/SM-Meter/blob/main/assets/main_view_executed.jpg)
+
 
 ### Custom Analysis
 
 The custom analysis window offers functionalities similar to real-time analysis, but with the flexibility to customize the parameters of the analysis. To initiate a custom analysis session, execute the `main.py` file and go to the custom analysis tab.
 
-<img src="https://github.com/ezepsosa/SM-Meter/blob/main/assets/main_view_executed_2.jpg" alt="Real time analysis customized" width="600"/>
+![Real time customized](https://github.com/ezepsosa/SM-Meter/blob/main/assets/main_view_executed_2.jpg)
+
 
 ### General Options, API Options & About
 
