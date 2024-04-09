@@ -1,8 +1,4 @@
 # Config files
 config.ini
-reddit.py
-po.py
-history.txt
-caca.py
 # cache files
 __pycache__/*
